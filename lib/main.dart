@@ -42,3 +42,10 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+/*
+[
+Either<Failure, List<Country>> 
+]
+
+*/

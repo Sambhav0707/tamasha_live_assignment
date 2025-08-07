@@ -15,6 +15,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   bool isLoadingMore = false;
   int currentPage = 1;
   final int pageSize = 10;
+  List<Country> filterCountries = [];
+  String searchQuery = '';
+  bool isSearching = false;
 
   HomeBloc({required GetCountries getCountries})
     : _getCountries = getCountries,
@@ -22,6 +25,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<HomeLoadEvent>(_onLoad);
     on<HomeLoadMoreEvent>(_onLoadMore);
     on<HomeRefreshEvent>(_onRefresh);
+    on<HomeSearchEvent>(_onSearch);
+    // on<HomeSearchStopEvent>(_onSearchStop);
   }
 
   _onLoad(HomeLoadEvent event, Emitter<HomeState> emit) async {
@@ -39,6 +44,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         isLoadingMore = false;
         emit(
           HomeSuccess(
+            filterCountries,
+            searchQuery,
+            isSearching,
             countryModel: success,
             displayedCountries: displayedCountries,
             isLoadingMore: isLoadingMore,
@@ -57,6 +65,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     isLoadingMore = true;
     emit(
       HomeSuccess(
+        filterCountries,
+        searchQuery,
+        isSearching,
         countryModel: allCountries,
         displayedCountries: displayedCountries,
         isLoadingMore: isLoadingMore,
@@ -75,6 +86,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     emit(
       HomeSuccess(
+        filterCountries,
+        searchQuery,
+        isSearching,
         countryModel: allCountries,
         displayedCountries: displayedCountries,
         isLoadingMore: isLoadingMore,
@@ -90,10 +104,44 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     emit(
       HomeSuccess(
+        filterCountries,
+        searchQuery,
+        isSearching,
         countryModel: allCountries,
         displayedCountries: displayedCountries,
         isLoadingMore: isLoadingMore,
         hasReachedEnd: displayedCountries.length >= allCountries.length,
+      ),
+    );
+  }
+
+  // that is for the searching
+  _onSearch(HomeSearchEvent event, Emitter<HomeState> emit) {
+    if (event.searchQuery.isEmpty) {
+      return;
+    }
+
+    searchQuery = event.searchQuery;
+    isSearching = true;
+    filterCountries = allCountries.where((value) {
+      final officialName = value.name.common.toString();
+      final commonName = value.name.common.toLowerCase().toString();
+
+      return allCountries.contains(value) ||
+          allCountries.contains(commonName);
+    }).toList();
+
+    print(filterCountries.length);
+
+    emit(
+      HomeSuccess(
+        filterCountries,
+        searchQuery,
+        isSearching,
+        countryModel: allCountries,
+        displayedCountries: displayedCountries,
+        isLoadingMore: isLoadingMore,
+        hasReachedEnd: false,
       ),
     );
   }

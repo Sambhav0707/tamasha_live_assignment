@@ -12,10 +12,17 @@ final class HomeLoaded extends HomeState {}
 final class HomeSuccess extends HomeState {
   final List<Country> countryModel;
   final List<Country> displayedCountries;
+  final List<Country> filterCOuntries;
+  String searchQuery = '';
+  bool isSearching = false;
+
   final bool isLoadingMore;
   final bool hasReachedEnd;
 
-  HomeSuccess({
+  HomeSuccess(
+    this.filterCOuntries,
+     this.searchQuery, 
+     this.isSearching, {
     required this.countryModel,
     required this.displayedCountries,
     required this.isLoadingMore,

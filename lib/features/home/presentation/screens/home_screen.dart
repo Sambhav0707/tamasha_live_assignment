@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart';
@@ -18,6 +20,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late ScrollController _scrollController;
+  late TextEditingController _searchController;
+  late Timer debounceTimer;
 
   @override
   void initState() {
@@ -25,6 +29,13 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<HomeBloc>().add(HomeLoadEvent());
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
+    _searchController = TextEditingController();
+
+    debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      context.read<HomeBloc>().add(
+        HomeSearchEvent(searchQuery: _searchController.text),
+      );
+    });
   }
 
   void _onScroll() {
@@ -37,6 +48,16 @@ class _HomeScreenState extends State<HomeScreen> {
         context.read<HomeBloc>().add(HomeLoadMoreEvent());
       }
     }
+  }
+
+  void _onSearched(String query) {
+    query = _searchController.text.toString();
+
+    debounceTimer.cancel();
+    debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      print(query);
+      context.read<HomeBloc>().add(HomeSearchEvent(searchQuery: query));
+    });
   }
 
   @override
@@ -124,6 +145,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   );
                                 },
                               ),
+
+                              TextFormField(
+                                controller: _searchController,
+                                onChanged: _onSearched,
+                              ),
                             ],
                           ),
                         ),
@@ -204,6 +230,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
                       if (state is HomeSuccess) {
+                        if (state.filterCOuntries.isEmpty &&
+                            state.isSearching == true) {
+                          return Center(child: Text("No data found"));
+                        }
                         return Scrollbar(
                           thickness: 6,
                           radius: const Radius.circular(3),

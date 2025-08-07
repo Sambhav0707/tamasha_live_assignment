@@ -7,7 +7,7 @@ import 'package:tamasha_assignment/features/home/domain/entities/country.dart';
 import 'package:tamasha_assignment/features/home/domain/repository/home_repository.dart';
 
 class GetCountries extends UseCase<List<Country>, NoParams> {
-  final HomeRepository homeRepository;
+  final HomeRepository homeRepository ;
   GetCountries({required this.homeRepository});
 
   @override
